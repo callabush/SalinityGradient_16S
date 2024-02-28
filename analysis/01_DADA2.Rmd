@@ -13,17 +13,30 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.path = "../figures/01_DADA2/") #Send any figure output to this folder
 ```
 
+## Before you start
+
+### Set my seed
+```{r set seed}
+# Any number can be chose
+set.seed(567890)
+```
+
+
+
+
+
 # Goals for this file
 
-1. Use raw fastq and generate the quality plots to asses the quality of reads
+1.  Use raw fastq and generate the quality plots to asses the quality of reads
 
-2. Filter and trim out bad sequences and bases from our sequencing files
+2.  Filter and trim out bad sequences and bases from our sequencing files
 
-3. Write out fastq files with high quality sequences
+3.  Write out fastq files with high quality sequences
 
-4. Evaluate the quality from our filter and trim. 
+4.  Evaluate the quality from our filter and trim.
 
-#Load Libraries
+## Load Libraries
+
 ```{r load-libraries}
 #install.packages("devtools")
 library("devtools")
@@ -32,7 +45,8 @@ library("devtools")
 library(dada2)
 ```
 
-# Load Data
+## Load Data
+
 ```{r load data}
 #Set the raw fastq path to the raw sequencing files
 #Path to the fastq files
@@ -56,7 +70,7 @@ head(reverse_reads)
 
 ```
 
-# Quality plots
+## Quality plots
 ```{r raw-quality plots}
 #Randomly select 2 samples from dataset to evaluate
 random_samples <- sample(1:length(forward_reads), size =2)
@@ -67,18 +81,20 @@ plotQualityProfile(forward_reads[random_samples])
 plotQualityProfile(reverse_reads[random_samples])
 ```
 
-# Prepare a placeholder for filtered reads
+## Prepare a placeholder for filtered reads
+
 ```{r prep-filtered-reads}
 # vector of our samples, extract the sample information from our file
 samples <- sapply(strsplit(basename(forward_reads), "_"), `[`,1)
 #Intuition check
 head(samples)
 #place filtered reads into filtered_fastqs_path
-filtered_fastqs_path <- "data/01_DADA2/2_filtered_fastqs"
+filtered_fastqs_path <- "data/01_DADA2/02_filtered_fastqs"
 
 # create 2 variables : filtered_F, filtered_R
 filtered_forward_reads <- file.path(filtered_fastqs_path, paste0(samples, "_R1_filtered.fastq.gz"))
 #Intuition check
+head(filtered_forward_reads)
 length(filtered_forward_reads)
 
 
@@ -86,5 +102,45 @@ filtered_reverse_reads <- file.path(filtered_fastqs_path, paste0(samples, "_R2_f
 #Intuition check
 length(filtered_reverse_reads)
 ```
+
+## Filter and Trim Reads
+
+Parameters of filter and trim **DEPEND ON THE DATASET**
+
+- `maxN` = number of N bases. Remove all Ns from the data. 
+- `maxEE` = quality filtering threshold applied to expected errors. By default, all expected errors. Mar recommends using c(1,1). Here, if there is maxEE expected errors, its okay. If more, throw away sequence.
+- `trimLeft` = trim certain number of base pairs on start of each read
+- `truncQ` = truncate reads at the first instance of a quality score less than or equal to selected number. Chose 2 
+- `rm.phix` = remove phi x
+- `compress` = make filtered files .gzipped
+- `multithread` = multithread
+
+```{r filter-and-trim}
+#Assign a vector to filtered reads
+#Trim out poor bases, first three basepairs on forward reads
+#Write out filtered fastq files
+filtered_reads <-
+  filterAndTrim(fwd = forward_reads, filt = filtered_forward_reads,
+              rev = reverse_reads, filt.rev = filtered_reverse_reads,
+              maxN = 0, maxEE = c(2, 2), trimLeft = 3,
+              truncQ = 2, rm.phix = TRUE, compress = TRUE) #multithread = TRUE)
+
+#These files are described in Kozich et al 2013 AEM
+# Describes library prep
+#Forward and reverse read have full overlap
+# 515F and 806R
+
+```
+
+
+
+
+
+##Session information
+```{r session-info}
+#Ensure reproducibility
+devtools::session_info()
+```
+
 
 
