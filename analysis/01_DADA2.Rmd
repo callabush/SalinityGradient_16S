@@ -74,7 +74,7 @@ library(tidyverse)
 #Set the raw fastq path to the raw sequencing files
 #Path to the fastq files
 raw_fastqs_path <- "data/01_DADA2/01_raw_gzipped_fastqs"
-
+raw_fastqs_path
 #What files are in this path (Intuition check)
 list.files(raw_fastqs_path)
 
@@ -96,7 +96,7 @@ head(reverse_reads)
 ## Raw Quality plots
 ```{r raw-quality plots}
 #Randomly select 2 samples from dataset to evaluate
-random_samples <- sample(1:length(forward_reads), size =2)
+random_samples <- sample(1:length(reverse_reads), size =2)
 random_samples
 
 #Calculate and plot quality of these two samples
@@ -115,9 +115,11 @@ samples <- sapply(strsplit(basename(forward_reads), "_"), `[`,1)
 head(samples)
 #place filtered reads into filtered_fastqs_path
 filtered_fastqs_path <- "data/01_DADA2/02_filtered_fastqs"
+filtered_fastqs_path
 
 # create 2 variables : filtered_F, filtered_R
-filtered_forward_reads <- file.path(filtered_fastqs_path, paste0(samples, "_R1_filtered.fastq.gz"))
+filtered_forward_reads <- 
+  file.path(filtered_fastqs_path, paste0(samples, "_R1_filtered.fastq.gz"))
 #Intuition check
 head(filtered_forward_reads)
 length(filtered_forward_reads)
@@ -195,14 +197,14 @@ filtered_df %>%
 ```{r learn-errors}
 #Forward reads
 error_forward_reads <-
-  learnErrors(filtered_forward_reads) # multithreade = TRUE
+  learnErrors(filtered_forward_reads, multithread = TRUE)
 
 #Plot forward reads errors
 plotErrors(error_forward_reads, nominalQ = TRUE) + labs(title = "Forward Read Error Model")
 
 #Reverse reads
 error_reverse_reads <-
-  learnErrors(filtered_reverse_reads) # multithreade = TRUE
+  learnErrors(filtered_reverse_reads, multithread = TRUE)
 
 #Plot reverse reads errors
 plotErrors(error_reverse_reads, nominalQ = TRUE) + labs(title = "Reverse Read Error Model")
@@ -214,10 +216,10 @@ Note: this is happening separately on the forward and reverse reads. This is uni
 ```{r infer-ASVs}
 #Infer forward ASVs
 dada_forward <- dada(filtered_forward_reads, 
-                     err = error_forward_reads) # multithread = TRUE
+                     err = error_forward_reads, multithread = TRUE)
 #Infer reverse ASVs
 dada_reverse <- dada(filtered_reverse_reads, 
-                     err = error_reverse_reads) # multithread = TRUE
+                     err = error_reverse_reads, multithread = TRUE)
 ```
 
 #Merge Forward and Reverse ASVs
