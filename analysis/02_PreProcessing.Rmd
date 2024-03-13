@@ -56,7 +56,7 @@ head(samples_fixed)
 
 # re-write the ASV count file to fix names
 colnames(asv_tab) <- samples_fixed
-
+str(asv_tab)
 ```
 
 ## Taxonomy table
@@ -78,12 +78,63 @@ tax_df %>%
 
 ## Track Reads Data
 ```{r load-track-reads}
+load("data/01_DADA2/track_read_counts.RData")
 
+# Take a look at the data
+track_counts_df
+
+# Make sure all data in ASV table matches ASV taxonomy
+head(track_counts_df)
+dim(track_counts_df)
+
+# Please in the terminal copy metadata.csv to data folder 
+# into: /workdir/cab565/git_repos/SalinityGradient_16S/data
+# from: /workdir/in_class_data/SalinityGradient_16S/metadata.csv
+
+#Load in metadata
+metadata_df <- read.csv("data/metadata.csv")
+head(metadata_df)
+dim(metadata_df)
+
+# Merge metadata df with track_reads_df
+head(metadata_df)
+head(track_counts_df)
+
+metadata_track_reads_df <-
+  metadata_df %>% 
+  left_join(., track_counts_df, by = "names") %>%
+  dplyr::select(-X)
+
+head(metadata_track_reads_df)
+
+# Update row.names to be sample names
+## Before
+row.names(metadata_track_reads_df)
+## Rewrite
+row.names(metadata_track_reads_df) <- metadata_track_reads_df$names
+## Check that it worked
+row.names(metadata_track_reads_df)
+# Intuition check
+head(metadata_track_reads_df)
 ```
 
 # Handoff to phyloseq
 ```{r phyloseq-handoff}
+# Double check it's all good
+dim(asv_tab)
+dim(tax_mat)
 
+# Intuition check
+stopifnot(row.names(asv_tab) == row.names(tax_mat))
+
+# Construct the phyloseq object
+raw_physeq <- phyloseq(otu_table(asv_tab, taxa_are_rows = TRUE), 
+                       sample_data(metadata_track_reads_df),
+                       tax_table(tax_mat))
+raw_physeq
+
+# Save this raw phyloseq object
+save(raw_physeq, file = "data/02_PreProcessing/raw_physeq.RData")
 ```
 
 
