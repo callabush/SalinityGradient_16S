@@ -45,6 +45,14 @@ raw_preprocessed_physeq
 # Intuition check
 min(sample_sums(raw_preprocessed_physeq))
 
+# Make a metadata dataframe
+metadata_df <- raw_preprocessed_physeq %>%
+  sample_data() %>%
+  data.frame()
+
+# Intuition check
+head(metadata_df)
+
 # Setting colors for the stations
 station_colors <- c(
   "Shipping Channel" = "dodgerblue4",
@@ -105,7 +113,39 @@ colnames(color_df)[1] <- "names"
 
 # Check
 head(color_df)
+
+# Make a helper dataframe for plotting with colors
+iNext_color_df <-
+  color_df %>%
+  # Fix the names for merging
+   mutate(names = gsub(names, pattern = "[.]", replace = "-"), 
+          names = gsub(names, pattern = "X", replace = "")) %>%
+  # Merge with metadata
+  left_join(metadata_df, by = "names") %>%
+  # Merge with colors for plotting with ggiNEXT
+  left_join(data.frame(station_colors = station_colors,
+            station = names(station_colors)),
+            by = "station") 
 ```
 
+# Plot Rarefaction with `ggiNEXT`
+
+```{r ggiNEXT, fig.width=8, fig.height=3.5}
+# Plot rarefaction!
+# Rarefaction/extrapolation curve, type = 1
+
+# Order q:
+ # 0 = Richness or total number of taxa
+ # 1 = Exponetial shannon or number of "common" taxa
+ # 2 = Inverse simpson, number of dominant taxa
+
+ggiNEXT(iNEXT_data, type = 1, facet.var = "Order.q") + 
+  facet_wrap(~Order.q, scales = "fixed") +
+  scale_color_manual(values = iNext_color_df$station_colors, guide = FALSE) +
+  scale_fill_manual(values = iNext_color_df$station_colors, guide = FALSE) +
+  scale_shape_manual(values = base::rep(17, nsamples(raw_preprocessed_physeq)),
+                     guide = FALSE) +
+  theme(legend.position = "none")
+```
 
 
