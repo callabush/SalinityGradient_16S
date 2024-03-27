@@ -20,7 +20,7 @@ editor_options:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
-                      fig.path = "../figures/04_Biodiversity")
+                      fig.path = "../figures/04_Biodiversity/")
 ```
 
 # Setting the Environment
@@ -136,7 +136,7 @@ iNext_color_df <-
 
 # Order q:
  # 0 = Richness or total number of taxa
- # 1 = Exponetial shannon or number of "common" taxa
+ # 1 = Exponential shannon or number of "common" taxa
  # 2 = Inverse simpson, number of dominant taxa
 
 ggiNEXT(iNEXT_data, type = 1, facet.var = "Order.q") + 
@@ -148,4 +148,63 @@ ggiNEXT(iNEXT_data, type = 1, facet.var = "Order.q") +
   theme(legend.position = "none")
 ```
 
+# Manually plot Diversity
+
+## Rarefaction
+```{r iNEXT-manual}
+iNEXT_manual_df <- 
+  iNEXT_data$iNextEst$size_based %>%
+  # $ is saying within the iNEXT_data list we want the iNEXTEst, then within
+  # that we want the size_based list
+  dplyr::rename(names = Assemblage) %>%
+  # Fix sample names
+  mutate(names = gsub(names, pattern = "[.]", replace = "-"),
+         names = gsub(names, pattern = "X", replace = "")) %>%
+  # Join with metadata
+  left_join(., metadata_df, by = "names") %>%
+  # Add colors to data frame
+  left_join(., data.frame(station_colors = station_colors,
+                          station = names(station_colors)),
+            by = "station")
+
+# Inspect 
+dim(iNEXT_manual_df)
+str(iNEXT_manual_df)
+
+# Plot it - Rarefaction Curve
+iNEXT_manual_df %>%
+  # Filter out rows that are calculated by rarefaction from iNEXT
+  dplyr::filter(Method == "Rarefaction") %>%
+  # Make the actual rarefaction plot with
+  # the number of sequences on the x-axis and diversity on the y-axis
+  ggplot(aes(x = m, y = qD, color = station, group = names)) + 
+  geom_line() +
+  #geom_point()
+  # Challenge: facet with the stations
+  scale_color_manual(values = station_colors) +
+  facet_grid(Order.q~station, scales = "fixed") +
+  theme(legend.position = "bottom")
+
+# Plot it - Extrapolation 
+iNEXT_manual_df %>%
+  # Filter out rows that are calculated by rarefaction from iNEXT
+  dplyr::filter(Method == "Extrapolation") %>%
+  # Make the actual rarefaction plot with
+  # the number of sequences on the x-axis and diversity on the y-axis
+  ggplot(aes(x = m, y = qD, color = station, group = names)) + 
+  geom_line() +
+  #geom_point()
+  scale_color_manual(values = station_colors) +
+  facet_grid(Order.q~station, scales = "fixed") +
+  theme(legend.position = "bottom")
+```
+
+
+
+
+##Session information
+```{r session-info}
+#Ensure reproducibility
+devtools::session_info()
+```
 
