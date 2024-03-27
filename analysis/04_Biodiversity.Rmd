@@ -199,6 +199,43 @@ iNEXT_manual_df %>%
   theme(legend.position = "bottom")
 ```
 
+# Diversity versus salinity
+
+## Environmental variable check
+```{r environmental-pairs, fig.width=8, fig.height=8}
+head(metadata_df)
+# Pull out environmental variables
+env_df <-
+  metadata_df %>%
+  dplyr::select(names, water_tempC:DO_mgL)
+# inspect
+head(env_df)
+
+# plot the correlations
+pairs(dplyr::select(env_df, -names), upper.panel = NULL)
+```
+
+## Diversity versus salinity
+```{r div-vs-salinity, fig.height=3.5, fig.width=6}
+# PSU = practial salinity unit
+# 1 PSU = 1 gram of salt per 1,000 grams of water
+# 1 PSU = 1 ppt (part per thousand)
+# Freshwater = 0 - 0.5
+# Brackish = 0.5 - 30
+# Marine = >30
+
+iNEXT_manual_df %>%
+  dplyr::filter(Method == "Observed") %>%
+  ggplot(aes(x = salinity_psu, y = qD)) +
+  geom_point(aes(color = station)) +
+  stat_smooth(method = "lm", formula = y ~poly(x,2)) + 
+  facet_wrap(.~Order.q, scales = "free") +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values = station_colors) + 
+  labs(x = "Salinity (PSU)", y = "# of ASVs")
+
+```
+
 
 
 
