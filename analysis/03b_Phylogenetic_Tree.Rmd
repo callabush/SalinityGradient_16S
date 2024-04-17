@@ -160,7 +160,7 @@ ggtree(midroot_physeq_rm456) +
 
 ```{r save-physeq}
 # Save both phyloseq objects with our tree object to one .RData file
-save(list = c("unrooted_physeq_rm456", "midpoint_rooted_tree"),
+save(list = c("unrooted_physeq_rm456", "midroot_physeq_rm456"),
      file = "data/03_Phylogenetic_Tree/phytree_preprocessed_physeq.RData")
 ```
 

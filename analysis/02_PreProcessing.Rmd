@@ -26,14 +26,6 @@ knitr::opts_chunk$set(echo = TRUE,
 ```
 
 
-# Load libraries
-```{r load-libraries}
-
-#install_github("joey711/phyloseq")
-
-pacman::p_load(devtools, phyloseq, tidyverse, dada2, install = FALSE)
-```
-
 # Goals
 
 Here, we will process the data into a phyloseq object.
@@ -52,6 +44,15 @@ Then, we will remove the following:
 
 
 Finally, write a data file of phyloseq output, which will be stored in `data/02_PreProcessing/raw_preprocessed_phyloseq.RData`.
+
+# Load libraries
+```{r load-libraries}
+
+#install_github("joey711/phyloseq")
+
+pacman::p_load(devtools, phyloseq, tidyverse, dada2, install = FALSE)
+```
+
 
 # Load data
 

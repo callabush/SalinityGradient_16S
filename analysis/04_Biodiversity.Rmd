@@ -23,6 +23,13 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.path = "../figures/04_Biodiversity/")
 ```
 
+# Goals
+
+1. Calculate the Hill diversity of the samples.
+2. Evaluate the rarefaction curves.
+3. Evaluate the diversity values.
+4. Make notes of specific samples and their seq depth.
+
 # Setting the Environment
 
 ## Set the seed
@@ -62,13 +69,6 @@ station_colors <- c(
   "Mesquite Bay" = "#00ADA7")
 ```
 
-
-# Goals
-
-1. Calculate the Hill diversity of the samples.
-2. Evaluate the rarefaction curves.
-3. Evaluate the diversity values.
-4. Make notes of specific samples and their seq depth. 
 
 # Diversity Calculations with iNEXT
 ```{r calc-div}

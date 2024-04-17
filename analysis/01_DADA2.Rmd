@@ -18,15 +18,6 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.path = "../figures/01_DADA2/") #Send any figure output to this folder
 ```
 
-## Before you start
-
-### Set my seed
-```{r set seed}
-# Any number can be chose
-set.seed(567890)
-```
-
-
 # Goals for this file
 
 1.  Use raw fastq and generate the quality plots to asses the quality of reads
@@ -54,6 +45,15 @@ set.seed(567890)
 2. Taxonomy table `tax_table`
 
 3. Sample information: `sample_table` track the reads lost throughout DADA2 workflow.
+
+
+## Before you start
+
+### Set my seed
+```{r set seed}
+# Any number can be chose
+set.seed(567890)
+```
 
 ## Load Libraries
 
