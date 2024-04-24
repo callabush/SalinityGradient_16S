@@ -434,6 +434,139 @@ permutest(beta_bray_station)
 
 Above, our variance is impacted by station. Therefore, we need to be very careful about what we conclude about our data. 
 
+# Taxonomic Composition
+
+## Phylum
+```{r phylum-colors}
+# Set the phylum colors
+phylum_colors <- c(
+  Acidobacteriota = "navy", 
+  Actinobacteriota = "darkslategray2", 
+  Armatimonadota = "deeppink1",
+  Alphaproteobacteria = "plum2", 
+  Bacteroidota = "gold", 
+  Betaproteobacteria = "plum1", 
+  Bdellovibrionota = "red1",
+  Chloroflexi="black", 
+  Crenarchaeota = "firebrick",
+  Cyanobacteria = "limegreen",
+  Deltaproteobacteria = "grey", 
+  Desulfobacterota="magenta",
+  Firmicutes = "#3E9B96",
+  Gammaproteobacteria = "greenyellow",
+  "Marinimicrobia (SAR406 clade)" = "yellow",
+  Myxococcota = "#B5D6AA",
+  Nitrospirota = "palevioletred1",
+  Proteobacteria = "royalblue",
+  Planctomycetota = "darkorange", 
+  "SAR324 clade(Marine group B)" = "olivedrab",
+  #Proteobacteria_unclassified = "greenyellow",
+  Thermoplasmatota = "green",
+  Verrucomicrobiota = "darkorchid1")
+ # Other = "grey")
+```
+
+#### Plot Phylum Composition
+```{r phylum-composition}
+# Goal is to calculate the phylum relative abundance
+# Note: the read depth must be normalized in some way: scaled_reads
+phylum_df <-
+  scaled_rooted_physeq %>%
+  # agglomerate at the phylum level
+  tax_glom(taxrank = "Phylum") %>%
+  # Transform counts to relative abundance
+  transform_sample_counts(function (x) {x/sum(x)}) %>%
+  # Melt to a long format
+  psmelt() %>%
+  # Filter out phyla that are less than one percent - get rid of low abundant Phyla
+  dplyr::filter(Abundance > 0.01) %>%
+  # fix the order of date
+  mutate(data = fct_relevel(date, c("6/2/21", "6/15/21", "10/5/21")),
+        # Re-write stations
+         station = fct_relevel(station, c("Copano West", "Copano East",
+                        "Mesquite Bay", "Aransas Bay", "Shipping Channel")))
+
+# Stacked bar plot with all Phyla
+# Plot Phylum Abundances - make sure to load phylum_colors
+phylum_df %>%
+  # Warning: Its important to have one sample per x value,
+  # Otherwise, it will take the sum between multiple samples
+  dplyr::filter(depth == 0.0) %>%
+  dplyr::filter(fraction == "Whole") %>%
+  ggplot(aes(x = station, y = Abundance, fill = Phylum)) +
+  facet_grid(.~date) + 
+  geom_bar(stat = "identity", color = "black") +
+  labs(title = "Surface Phylum Composition") + 
+  scale_fill_manual(values = phylum_colors) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1))
+
+# Make each Phyla its own row
+phylum_df %>%
+  dplyr::filter(depth == 0.0) %>%
+  dplyr::filter(fraction == "Whole") %>%
+  ggplot(aes(x = station, y = Abundance, fill = Phylum)) +
+  facet_grid(Phylum~date, scale = "free") + 
+  geom_bar(stat = "identity", color = "black") +
+  labs(title = "Surface Phylum Composition") + 
+  scale_fill_manual(values = phylum_colors) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1))
+  
+# Narrow in on a specific group
+# Actinobacteriota - y: abundance, x: station, dot plot + boxplot
+phylum_df %>%
+  dplyr::filter(Phylum == "Actinobacteriota") %>%
+  # build the plot
+  ggplot(aes(x = station, y = Abundance, fill = station, color = station)) + 
+  geom_boxplot(alpha = 0.5, outlier.shape = NA) +
+  # outliers not plotted here in boxplot
+  geom_jitter() +
+  theme_bw() +
+  labs(title = "Actinobacteriota Phylum Abundance") +
+  scale_color_manual(values = station_colors) +
+  scale_fill_manual(values = station_colors)
+
+# for statistics, Kruskall-Wallis followed by a Tukey's Posthoc test
+# These are non parametric
+```
+
+
+## Family
+```{r family-compostion}
+family_df <-
+  scaled_rooted_physeq %>%
+  # agglomerate at the phylum level
+  tax_glom(taxrank = "Family") %>%
+  # Transform counts to relative abundance
+  transform_sample_counts(function (x) {x/sum(x)}) %>%
+  # Melt to a long format
+  psmelt() %>%
+  # Filter out phyla that are less than one percent - get rid of low abundant Phyla
+  dplyr::filter(Abundance > 0.01) %>%
+  # fix the order of date
+  mutate(data = fct_relevel(date, c("6/2/21", "6/15/21", "10/5/21")),
+        # Re-write stations
+         station = fct_relevel(station, c("Copano West", "Copano East",
+                        "Mesquite Bay", "Aransas Bay", "Shipping Channel")))
+
+family_df %>%
+  dplyr::filter(Phylum == "Actinobacteriota") %>%
+  # build the plot
+  ggplot(aes(x = station, y = Abundance,
+             fill = station, color = station)) + 
+  facet_wrap(.~Family, scales = "free_y", nrow = 1) +
+  geom_boxplot(alpha = 0.5, outlier.shape = NA) +
+  # outliers not plotted here in boxplot
+  geom_jitter() +
+  theme_bw() +
+  labs(title = "Actinobacteriota Family Abundance") +
+  scale_color_manual(values = station_colors) +
+  scale_fill_manual(values = station_colors)
+
+```
+
+
 # Session Information
  For Reproducibility
 ```{r session-info}
